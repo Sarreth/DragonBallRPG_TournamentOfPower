@@ -1,0 +1,7 @@
+[
+null,
+{"id":1,"battlerName":"Goku","characterIndex":0,"characterName":"Goku","classId":1,"equips":[1,1,2,3,0],"faceIndex":0,"faceName":"Goku","traits":[],"initialLevel":1,"maxLevel":99,"name":"Goku","nickname":"","note":"<Class 2 Character: Goku 1>\n<Class 2 Face: Goku 1>\n<Class 2 Battler: Goku_ssj>\n\n<Class 3 Character: Goku 2>\n<Class 3 Face: Goku 2>\n<Class 3 Battler: Goku_ssj2>\n\n<Class 4 Character: Goku 3>\n<Class 4 Face: Goku 3>\n<Class 4 Battler: Goku_ssj3>","profile":""},
+{"id":2,"battlerName":"Vegeta","characterIndex":0,"characterName":"Vegeta","classId":7,"equips":[2,1,2,3,0],"faceIndex":0,"faceName":"Vegeta","traits":[],"initialLevel":1,"maxLevel":99,"name":"Vegeta","nickname":"","note":"<Class 8 Character: Vegeta 1>\n<Class 8 Face: Vegeta 1>\n<Class 8 Battler: Vegeta_ssj>\n\n<Class 9 Character: Vegeta 2>\n<Class 9 Face: Vegeta 2>\n<Class 9 Battler: Vegeta_ssj2>\n\n<Class 10 Character: Vegeta 3>\n<Class 10 Face: Vegeta 3>\n<Class 10 Battler: Vegeta_ssj3>","profile":""},
+{"id":3,"battlerName":"Actor3_8","characterIndex":7,"characterName":"Actor3","classId":13,"equips":[3,0,2,3,4],"faceIndex":7,"faceName":"Actor3","traits":[],"initialLevel":1,"maxLevel":99,"name":"Gohan","nickname":"","note":"","profile":""},
+{"id":4,"battlerName":"Trunks","characterIndex":0,"characterName":"Trunks","classId":14,"equips":[4,0,2,3,4],"faceIndex":0,"faceName":"Trunks","traits":[],"initialLevel":1,"maxLevel":99,"name":"Trunks","nickname":"","note":"","profile":""}
+]
