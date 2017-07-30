@@ -77,6 +77,8 @@
  Must be used with Yanfly's Battle Engine Core to work properly.
  
  Put <capture_actor_id:x> into the notetag of an enemy, with x as the actor id.
+  
+ Put <capture_class_id:x> into the notetag of an enemy, with x as the class id.
  
  Put <capture> or <captureRate:x> into the notetag of a skill or item to 
  enable capture. <capture> guarantees capture while <captureRate:x> adds 
@@ -137,6 +139,8 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
                 ('<DreamX Capture Enemies>');
     })[0].parameters; //Thanks to Iavra
 
+	var lastClassId = -1;
+	
     var parameterCaptureSuccessMsg = String(parameters['Capture Success Message']
             || '%1 was captured!');
     var parameterCaptureFailedMsg = String(parameters['Capture Fail Message']
@@ -382,7 +386,8 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
 
     Game_Action.prototype.handleCaptureSuccess = function (target, dataEnemyMeta, baseActorId, numDuplicates) {
         var newActorLevel = 1;
-
+		lastClassId = parseInt(dataEnemyMeta.capture_class_id);
+		
         if (parameterDuplicateLimit > 0 && numDuplicates >= parameterDuplicateLimit && paramLevelUpNoDuplicate) {
             target._wasLevelUpCaptured = true;
         } else {
@@ -526,8 +531,8 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
         var CapturedEnemy = JSON.parse(JSON.stringify(dataActor));
 
         // give a new id
-        CapturedEnemy.id = $dataActors.length;
-        CapturedEnemy.baseActorId = actorId;
+        // CapturedEnemy.id = $dataActors.length;
+        // CapturedEnemy.baseActorId = actorId;
 
         // give a new starting level
         CapturedEnemy.initialLevel = parseInt(level);
@@ -536,7 +541,14 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
         $dataActors.push(CapturedEnemy);
 
         $gameActors.actor(CapturedEnemy.id).setup(CapturedEnemy.id);
-
+		
+		if(lastClassId > 0)
+		{
+			$gameActors.actor(CapturedEnemy.id).changeClass(lastClassId, false);
+		}
+		
+		lastClassId = -1;
+		
         if ($gameParty.inBattle() && paramAddInBattle === false) {
             BattleManager._capturedEnemies.push({newId: CapturedEnemy.id, baseId: actorId});
         } else {

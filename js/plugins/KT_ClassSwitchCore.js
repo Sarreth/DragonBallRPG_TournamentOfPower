@@ -1,6 +1,6 @@
 /*:
 *
-* @plugindesc Dragon Ball Utils plugin version 2.0
+* @plugindesc Dragon Ball Utils plugin version 2.1
 * Assembly with some utilities for the Dragon Ball Tournament Of Power game.
 * See help for indications about Plugin Command.
 *
