@@ -1,6 +1,6 @@
 /*:
 *
-* @plugindesc Dragon Ball Utils plugin version 2.1
+* @plugindesc Dragon Ball Utils plugin version 2.2
 * Assembly with some utilities for the Dragon Ball Tournament Of Power game.
 * See help for indications about Plugin Command.
 *
@@ -45,7 +45,7 @@ var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 	
 	console.log("Commande appelée " + command );
      if(command === 'EvalActorLevel'){
-      Sarreth.Util.checkActorLevel();
+      Sarreth.Util.checkGroupActorLevel();
     }
 	
      if(command === 'PotaraFusion'){
@@ -60,41 +60,48 @@ var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 
 Sarreth.Util = Sarreth.Util || {};
 
-Sarreth.Util.checkActorLevel = function() 
+Sarreth.Util.checkGroupActorLevel = function() 
 {	
 	console.log("Méthode checkActorLevel avec " + $gameParty.members().length + " actors");  
 	var noteClass = /<(?:NEXTCLASS):[ ](\d+)[ ](?:LEVEL)[ ](\d+)>/i;
 
 	for (var n = 0; n < $gameParty.members().length; n++) 
 	{		
-		var actor = $gameParty.members()[n];
-		var obj = actor.currentClass();
-		console.log("Actor " + $gameParty.members()[n] + " | Class : " + obj);
-		var notedata = obj.note.split(/[\r\n]+/);
-		var nextClassId = -1;
-		var requiredLevel = -1;
+		Sarreth.Util.checkActorLevel($gameParty.members()[n]._baseActorId);
+	}
+};
 
-		console.log("debut de boucle avec notadata length :" + notedata.length);
-		for (var i = 0; i < notedata.length; i++) 
-		{		
-		  var line = notedata[i];
-		  console.log(line);
-		  
-		  if (line.match(noteClass))
-		  {
-			console.log("Line match:");
-			nextClassId = parseInt(RegExp.$1);
-			requiredLevel = parseInt(RegExp.$2);
-			console.log("ecriture des variables : classe suivante " + nextClassId + " requis " + requiredLevel);
-		  }else
-		  {
-			console.log("match failed");
-		  }
-		}
-		if(nextClassId >= 0 && requiredLevel > 0 && actor.level >= requiredLevel)
-		{
-			actor.changeClass(nextClassId, false);
-		}
+Sarreth.Util.checkActorLevel = function(actorId) 
+{
+	var noteClass = /<(?:NEXTCLASS):[ ](\d+)[ ](?:LEVEL)[ ](\d+)>/i;
+	
+	var actor = $gameActors.actor(actorId);
+	var obj = actor.currentClass();
+	console.log("Actor " + actor + " | Class : " + obj);
+	var notedata = obj.note.split(/[\r\n]+/);
+	var nextClassId = -1;
+	var requiredLevel = -1;
+
+	console.log("debut de boucle avec notadata length :" + notedata.length);
+	for (var i = 0; i < notedata.length; i++) 
+	{		
+	  var line = notedata[i];
+	  console.log(line);
+	  
+	  if (line.match(noteClass))
+	  {
+		console.log("Line match:");
+		nextClassId = parseInt(RegExp.$1);
+		requiredLevel = parseInt(RegExp.$2);
+		console.log("ecriture des variables : classe suivante " + nextClassId + " requis " + requiredLevel);
+	  }else
+	  {
+		console.log("match failed");
+	  }
+	}
+	if(nextClassId >= 0 && requiredLevel > 0 && actor.level >= requiredLevel)
+	{
+		actor.changeClass(nextClassId, false);
 	}
 };
 
@@ -174,8 +181,8 @@ Sarreth.Util.checkPotaraFusion = function()
 	var receiver = $dataActors[receiverId];
 	$gameParty.addActor(resultActorId);
 	
-	var callerLevel = caller.level;
-	var receiverLevel = receiver.level;
+	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
+	var receiverLevel = Sarreth.Util.getActorTotalLevel(callerId);
 	
 	var targetLevel = -1;
 	if(callerLevel <= receiverLevel)
@@ -185,17 +192,37 @@ Sarreth.Util.checkPotaraFusion = function()
 	else
 	{
 		targetLevel = receiverLevel;
-	}
-	
-	while($gameActors.actor(resultActorId).level < targetLevel)
-	{
-		$gameActors.actor(resultActorId).changeLevel($gameActors.actor(resultActorId).level+1, false);
-		Sarreth.Util.checkActorLevel();
 	}	
+	
+	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
 	
 	console.log("Caller " + caller.name + " | Receiver " + receiver.name + " | Fused " + $gameActors.actor(resultActorId).name);  
 	
 	$gameParty.removeActor(receiverId);
 	$gameParty.removeActor(callerId);
 };
+
+Sarreth.Util.getActorTotalLevel = function(actorId)
+{
+	var callerTotalLevel = 1;	
+	var gameCaller = $gameActors.actor(actorId);
+	
+	for(var level = 1; level < $dataClasses.length; level++)
+	{
+		if($dataClasses[level])
+			callerTotalLevel += gameCaller.classLevel($dataClasses[level].id) - 1;
+	}
+	
+	return callerTotalLevel;
+}
+
+Sarreth.Util.addLevelToActorAndCheckForEvol = function(actorId, levelToAdd)
+{
+	while(levelToAdd > 0)
+	{
+		$gameActors.actor(actorId).changeLevel($gameActors.actor(actorId).level+1, false);
+		Sarreth.Util.checkActorLevel(actorId);
+		levelToAdd--;
+	}
+}
 
