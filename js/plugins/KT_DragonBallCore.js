@@ -1,6 +1,6 @@
 /*:
 *
-* @plugindesc Dragon Ball Utils plugin version 2.5
+* @plugindesc Dragon Ball Utils plugin version 3.0
 * Assembly with some utilities for the Dragon Ball Tournament Of Power game.
 * See help for indications about Plugin Command.
 *
@@ -49,10 +49,10 @@
 */
 var Sarreth = Sarreth || {};
 
-Sarreth.Parameters = PluginManager.parameters('KT_ClassSwitchCore');
+Sarreth.Parameters = PluginManager.parameters('KT_DragonBallCore');
 Sarreth.Param = Sarreth.Param || {};
 
-Sarreth.Param.FusionDuration = eval(String(Sarreth.Parameters['Fusion Duration']));
+Sarreth.Param.FusionDuration = Number(Sarreth.Parameters['Fusion Duration']);
 
 var fusionResultIds  = [];
 var fusionCallerIds  = [];
@@ -84,6 +84,193 @@ var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 
 Sarreth.Util = Sarreth.Util || {};
 
+Sarreth.Util.onBattleEnd = function()
+{
+	var toRemove = [];
+	
+	for(var fusionIndex = 0; fusionIndex < fusionResultIds.length; fusionIndex++)
+	{
+		$gameParty.addActor(fusionCallerIds[fusionIndex]);
+		$gameParty.addActor(fusionReceiverIds[fusionIndex]);
+		$gameParty.removeActor(fusionResultIds[fusionIndex]);
+		
+		toRemove.push(fusionIndex);
+	}
+	
+	for(var i=0; i < toRemove.length; i++)
+	{
+		fusionCountdown.splice(toRemove[i],1);
+		fusionCallerIds.splice(toRemove[i],1);
+		fusionReceiverIds.splice(toRemove[i],1);
+		fusionResultIds.splice(toRemove[i],1);
+	}
+	
+	toRemove = undefined; 
+}
+
+Sarreth.Util.checkTempFusion = function() 
+{	
+	console.log("Méthode checkPotaraFusion avec " + $gameParty.members().length + " actors");  
+	var noteClass = /<(?:TEMPFUSION WITH)[ ](\d+):[ ](?:RESULT)[ ](\d+)>/i;
+	var callerId = $gameVariables.value(1);
+	var receiverId = $gameVariables.value(2);	
+	
+	var baseCallerId = $gameActors.actor(callerId)._baseActorId;
+	var baseReceiverId = $gameActors.actor(receiverId)._baseActorId;
+	
+	$gameVariables.setValue(1,0);
+	$gameVariables.setValue(2,0);
+	
+	console.log("Caller Id " + callerId + " | Receiver id " + receiverId);  
+	var caller = $dataActors[baseCallerId];
+	console.log("Caller " + caller + " | Note " + caller.note);  
+	var notedata = caller.note.split(/[\r\n]+/);
+	var fusionCandidate = -1;
+	var resultActorId = -1;
+	
+	for (var i = 0; i < notedata.length; i++) 
+	{		
+	  var line = notedata[i];
+	  console.log(line);
+	  
+	  if (line.match(noteClass))
+	  {
+		console.log("Line match:");
+		fusionCandidate = parseInt(RegExp.$1);
+		resultActorId = parseInt(RegExp.$2);
+		console.log("ecriture des variables : actor eligible " + fusionCandidate + " fusion " + resultActorId);
+		
+		if(fusionCandidate != baseReceiverId)
+		{
+			fusionCandidate = -1;
+			resultActorId = -1;
+		}
+		
+	  }else
+	  {
+		console.log("match failed");
+	  }
+	}
+	
+	if(fusionCandidate != baseReceiverId || fusionCandidate <=0 || resultActorId <=0)
+	{	
+		//Display screen
+		return;
+	}
+	
+	$gameParty.addActor(resultActorId);
+	
+	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
+	var receiverLevel = Sarreth.Util.getActorTotalLevel(callerId);
+	
+	var targetLevel = callerLevel + receiverLevel;
+	
+	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
+	
+	$gameParty.removeActor(receiverId);
+	$gameParty.removeActor(callerId);
+	
+	fusionReceiverIds.push(receiverId);
+	fusionCallerIds.push(callerId);
+	fusionResultIds.push(resultActorId);
+	fusionCountdown.push(Sarreth.Param.FusionDuration);
+};
+
+Sarreth.Util.checkPotaraFusion = function() 
+{	
+	console.log("Méthode checkPotaraFusion avec " + $gameParty.members().length + " actors");  
+	var noteClass = /<(?:POTARAFUSION WITH)[ ](\d+):[ ](?:RESULT)[ ](\d+)>/i;
+	var callerId = $gameVariables.value(1);
+	var receiverId = $gameVariables.value(2);	
+	
+	var baseCallerId = $gameActors.actor(callerId)._baseActorId;
+	var baseReceiverId = $gameActors.actor(receiverId)._baseActorId;
+	
+	$gameVariables.setValue(1,0);
+	$gameVariables.setValue(2,0);
+	
+	console.log("Caller Id " + callerId + " | Receiver id " + receiverId);  
+	var caller = $dataActors[baseCallerId];
+	console.log("Caller " + caller + " | Note " + caller.note);  
+	var notedata = caller.note.split(/[\r\n]+/);
+	var potaraCandidate = -1;
+	var resultActorId = -1;
+	
+	for (var i = 0; i < notedata.length; i++) 
+	{		
+	  var line = notedata[i];
+	  console.log(line);
+	  
+	  if (line.match(noteClass))
+	  {
+		console.log("Line match:");
+		potaraCandidate = parseInt(RegExp.$1);
+		resultActorId = parseInt(RegExp.$2);
+		console.log("ecriture des variables : actor eligible " + potaraCandidate + " fusion " + resultActorId);
+		
+		if(potaraCandidate != baseReceiverId)
+		{
+			potaraCandidate = -1;
+			resultActorId = -1;
+		}
+		
+	  }else
+	  {
+		console.log("match failed");
+	  }
+	}
+	
+	if(potaraCandidate != baseReceiverId || potaraCandidate <=0 || resultActorId <=0)
+	{	
+		//Display screen
+		return;
+	}
+	
+	$gameParty.addActor(resultActorId);
+	
+	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
+	var receiverLevel = Sarreth.Util.getActorTotalLevel(callerId);
+	
+	var targetLevel = -1;
+	if(callerLevel <= receiverLevel)
+	{
+		targetLevel = callerLevel;
+	}
+	else
+	{
+		targetLevel = receiverLevel;
+	}	
+	
+	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
+	
+	$gameParty.removeActor(receiverId);
+	$gameParty.removeActor(callerId);
+};
+
+Sarreth.Util.getActorTotalLevel = function(actorId)
+{
+	var callerTotalLevel = 1;	
+	var gameCaller = $gameActors.actor(actorId);
+	
+	for(var level = 1; level < $dataClasses.length; level++)
+	{
+		if($dataClasses[level])
+			callerTotalLevel += gameCaller.classLevel($dataClasses[level].id) - 1;
+	}
+	
+	return callerTotalLevel;
+}
+
+Sarreth.Util.addLevelToActorAndCheckForEvol = function(actorId, levelToAdd)
+{
+	while(levelToAdd > 0)
+	{
+		$gameActors.actor(actorId).changeLevel($gameActors.actor(actorId).level+1, false);
+		Sarreth.Util.checkActorLevel($gameActors.actor(actorId));
+		levelToAdd--;
+	}
+}
+
 Sarreth.Util.checkGroupActorLevel = function() 
 {	
 	console.log("Méthode checkActorLevel avec " + $gameParty.members().length + " actors");  
@@ -91,15 +278,13 @@ Sarreth.Util.checkGroupActorLevel = function()
 
 	for (var n = 0; n < $gameParty.members().length; n++) 
 	{		
-		Sarreth.Util.checkActorLevel($gameParty.members()[n]._baseActorId);
+		Sarreth.Util.checkActorLevel($gameParty.members()[n]);
 	}
 };
 
-Sarreth.Util.checkActorLevel = function(actorId) 
+Sarreth.Util.checkActorLevel = function(actor) 
 {
 	var noteClass = /<(?:NEXTCLASS):[ ](\d+)[ ](?:LEVEL)[ ](\d+)>/i;
-	
-	var actor = $gameActors.actor(actorId);
 	var obj = actor.currentClass();
 	console.log("Actor " + actor + " | Class : " + obj);
 	var notedata = obj.note.split(/[\r\n]+/);
@@ -129,35 +314,14 @@ Sarreth.Util.checkActorLevel = function(actorId)
 	}
 };
 
-Sarreth.Util.onBattleEnd = function()
-{
-	var toRemove = [];
-	
-	for(var fusionIndex = 0; fusionIndex < fusionResultIds.length; fusionIndex++)
-	{
-		if(fusionCountdown[fusionIndex] > 0)
-		{
-			$gameParty.addActor(fusionCallerIds[fusionIndex]);
-			$gameParty.addActor(fusionReceiverIds[fusionIndex]);
-			$gameParty.removeActor(fusionResultIds[fusionIndex]);
-			
-			toRemove.push(fusionIndex);
-		}else
-		{
-			fusionCountdown[fusionIndex]--;
-		}
-	}
-	
-	for(var i=0; i < toRemove.length; i++)
-	{
-		fusionCountdown.splice(toRemove[i],1);
-		fusionCallerIds.splice(toRemove[i],1);
-		fusionReceiverIds.splice(toRemove[i],1);
-		fusionResultIds.splice(toRemove[i],1);
-	}
-	
-	toRemove = undefined; 
-}
+//=============================================================================
+// Prototype
+//=============================================================================
+
+//////=========================================================================
+////// BattleManager
+//////=========================================================================
+
 
 Sarreth.Util.BattleManager_processDefeat = BattleManager.processDefeat;
 BattleManager.processDefeat = function () 
@@ -205,167 +369,52 @@ Sarreth.Util.BattleManager_updateTurnEnd = BattleManager.updateTurnEnd;
 	toRemove = undefined; 
 };
 
-Sarreth.Util.checkTempFusion = function() 
-{	
-	console.log("Méthode checkPotaraFusion avec " + $gameParty.members().length + " actors");  
-	var noteClass = /<(?:TEMPFUSION WITH)[ ](\d+):[ ](?:RESULT)[ ](\d+)>/i;
-	var callerId = $gameVariables.value(1);
-	var receiverId = $gameVariables.value(2);	
-	
-	$gameVariables.setValue(1,0);
-	$gameVariables.setValue(2,0);
-	
-	console.log("Caller Id " + callerId + " | Receiver id " + receiverId);  
-	var caller = $dataActors[callerId];
-	console.log("Caller " + caller + " | Note " + caller.note);  
-	var notedata = caller.note.split(/[\r\n]+/);
-	var fusionCandidate = -1;
-	var resultActorId = -1;
-	
-	for (var i = 0; i < notedata.length; i++) 
-	{		
-	  var line = notedata[i];
-	  console.log(line);
-	  
-	  if (line.match(noteClass))
-	  {
-		console.log("Line match:");
-		fusionCandidate = parseInt(RegExp.$1);
-		resultActorId = parseInt(RegExp.$2);
-		console.log("ecriture des variables : actor eligible " + fusionCandidate + " fusion " + resultActorId);
-		
-		if(fusionCandidate != receiverId)
-		{
-			fusionCandidate = -1;
-			resultActorId = -1;
-		}
-		
-	  }else
-	  {
-		console.log("match failed");
-	  }
-	}
-	
-	if(fusionCandidate != receiverId || fusionCandidate <=0 || resultActorId <=0)
-	{	
-		//Display screen
-		return;
-	}
-	
-	var receiverActor = $dataActors[receiverId];
-	
-	$gameParty.addActor(resultActorId);
-	
-	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
-	var receiverLevel = Sarreth.Util.getActorTotalLevel(callerId);
-	
-	var targetLevel = callerLevel + receiverLevel;
-	
-	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
-	
-	console.log("Caller " + caller.name + " | Receiver " + receiverActor.name + " | Fused " + $gameActors.actor(resultActorId).name);  
-	
-	$gameParty.removeActor(receiverId);
-	$gameParty.removeActor(callerId);
-	
-	fusionReceiverIds.push(receiverId);
-	fusionCallerIds.push(callerId);
-	fusionResultIds.push(resultActorId);
-	fusionCountdown.push(Sarreth.Param.FusionDuration);
+
+//////=========================================================================
+////// GameOverScene
+//////=========================================================================
+
+Scene_Gameover.prototype.update = function() {
+    if (this.isActive() && !this.isBusy() && this.isTriggered()) {
+        this.loadgame();
+    }
+    if (this.isActive() && !this.isBusy() && this.isBackTriggered()) {
+        this.gotoTitle();
+    }
+    Scene_Base.prototype.update.call(this);
 };
 
-Sarreth.Util.checkPotaraFusion = function() 
-{	
-	console.log("Méthode checkPotaraFusion avec " + $gameParty.members().length + " actors");  
-	var noteClass = /<(?:POTARAFUSION WITH)[ ](\d+):[ ](?:RESULT)[ ](\d+)>/i;
-	var callerId = $gameVariables.value(1);
-	var receiverId = $gameVariables.value(2);	
-	
-	$gameVariables.setValue(1,0);
-	$gameVariables.setValue(2,0);
-	
-	console.log("Caller Id " + callerId + " | Receiver id " + receiverId);  
-	var caller = $dataActors[callerId];
-	console.log("Caller " + caller + " | Note " + caller.note);  
-	var notedata = caller.note.split(/[\r\n]+/);
-	var potaraCandidate = -1;
-	var resultActorId = -1;
-	
-	for (var i = 0; i < notedata.length; i++) 
-	{		
-	  var line = notedata[i];
-	  console.log(line);
-	  
-	  if (line.match(noteClass))
-	  {
-		console.log("Line match:");
-		potaraCandidate = parseInt(RegExp.$1);
-		resultActorId = parseInt(RegExp.$2);
-		console.log("ecriture des variables : actor eligible " + potaraCandidate + " fusion " + resultActorId);
-		
-		if(potaraCandidate != receiverId)
-		{
-			potaraCandidate = -1;
-			resultActorId = -1;
-		}
-		
-	  }else
-	  {
-		console.log("match failed");
-	  }
-	}
-	
-	if(potaraCandidate != receiverId || potaraCandidate <=0 || resultActorId <=0)
-	{	
-		//Display screen
-		return;
-	}
-	
-	var receiver = $dataActors[receiverId];
-	$gameParty.addActor(resultActorId);
-	
-	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
-	var receiverLevel = Sarreth.Util.getActorTotalLevel(callerId);
-	
-	var targetLevel = -1;
-	if(callerLevel <= receiverLevel)
-	{
-		targetLevel = callerLevel;
-	}
-	else
-	{
-		targetLevel = receiverLevel;
-	}	
-	
-	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
-	
-	console.log("Caller " + caller.name + " | Receiver " + receiver.name + " | Fused " + $gameActors.actor(resultActorId).name);  
-	
-	$gameParty.removeActor(receiverId);
-	$gameParty.removeActor(callerId);
+
+Scene_Gameover.prototype.isTriggered = function() {
+    return Input.isTriggered('ok') || TouchInput.isTriggered();
+};
+Scene_Gameover.prototype.isBackTriggered = function() {
+    return Input.isRepeated('cancel') || TouchInput.isCancelled();
 };
 
-Sarreth.Util.getActorTotalLevel = function(actorId)
-{
-	var callerTotalLevel = 1;	
-	var gameCaller = $gameActors.actor(actorId);
-	
-	for(var level = 1; level < $dataClasses.length; level++)
-	{
-		if($dataClasses[level])
-			callerTotalLevel += gameCaller.classLevel($dataClasses[level].id) - 1;
-	}
-	
-	return callerTotalLevel;
-}
 
-Sarreth.Util.addLevelToActorAndCheckForEvol = function(actorId, levelToAdd)
-{
-	while(levelToAdd > 0)
-	{
-		$gameActors.actor(actorId).changeLevel($gameActors.actor(actorId).level+1, false);
-		Sarreth.Util.checkActorLevel(actorId);
-		levelToAdd--;
-	}
-}
+Scene_Gameover.prototype.loadgame = function() {
+    this.fadeOutAll();
+    if(DataManager.isAnySavefileExists()){
+        DataManager.loadGame(DataManager.latestSavefileId());
+        this.reloadMapIfUpdated();
+        $gameSystem.onAfterLoad();
+        SceneManager.goto(Scene_Map);
+    }
+    else{
+        SceneManager.goto(Scene_Title);
+    }
+};
+
+
+Scene_Gameover.prototype.gotoTitle = function() {
+    this.fadeOutAll();
+    SceneManager.goto(Scene_Title);
+};
+
+
+Scene_Gameover.prototype.reloadMapIfUpdated = function() {
+    $gamePlayer.reserveTransfer($gameMap.mapId(), $gamePlayer.x, $gamePlayer.y);
+    $gamePlayer.requestMapReload();
+};
 

@@ -531,8 +531,8 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
         var CapturedEnemy = JSON.parse(JSON.stringify(dataActor));
 
         // give a new id
-        // CapturedEnemy.id = $dataActors.length;
-        // CapturedEnemy.baseActorId = actorId;
+        CapturedEnemy.id = $dataActors.length;
+        CapturedEnemy.baseActorId = actorId;
 
         // give a new starting level
         CapturedEnemy.initialLevel = parseInt(level);
