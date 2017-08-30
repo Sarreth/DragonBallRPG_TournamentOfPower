@@ -1,6 +1,6 @@
 /*:
 *
-* @plugindesc Dragon Ball Utils plugin version 3.0
+* @plugindesc Dragon Ball Utils plugin version 3.1
 * Assembly with some utilities for the Dragon Ball Tournament Of Power game.
 * See help for indications about Plugin Command.
 *
@@ -90,6 +90,7 @@ Sarreth.Util.onBattleEnd = function()
 	
 	for(var fusionIndex = 0; fusionIndex < fusionResultIds.length; fusionIndex++)
 	{
+		Sarreth.Util.setHealthToFusedActor(fusionResultIds[fusionIndex], fusionCallerIds[fusionIndex], fusionReceiverIds[fusionIndex])
 		$gameParty.addActor(fusionCallerIds[fusionIndex]);
 		$gameParty.addActor(fusionReceiverIds[fusionIndex]);
 		$gameParty.removeActor(fusionResultIds[fusionIndex]);
@@ -161,11 +162,12 @@ Sarreth.Util.checkTempFusion = function()
 	$gameParty.addActor(resultActorId);
 	
 	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
-	var receiverLevel = Sarreth.Util.getActorTotalLevel(callerId);
+	var receiverLevel = Sarreth.Util.getActorTotalLevel(receiverId);
 	
 	var targetLevel = callerLevel + receiverLevel;
 	
 	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
+	Sarreth.Util.setHealthForFusionActor(resultActorId, callerId, receiverId);
 	
 	$gameParty.removeActor(receiverId);
 	$gameParty.removeActor(callerId);
@@ -229,7 +231,7 @@ Sarreth.Util.checkPotaraFusion = function()
 	$gameParty.addActor(resultActorId);
 	
 	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
-	var receiverLevel = Sarreth.Util.getActorTotalLevel(callerId);
+	var receiverLevel = Sarreth.Util.getActorTotalLevel(receiverId);
 	
 	var targetLevel = -1;
 	if(callerLevel <= receiverLevel)
@@ -242,6 +244,7 @@ Sarreth.Util.checkPotaraFusion = function()
 	}	
 	
 	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
+	Sarreth.Util.setHealthForFusionActor(resultActorId, callerId, receiverId);
 	
 	$gameParty.removeActor(receiverId);
 	$gameParty.removeActor(callerId);
@@ -269,6 +272,24 @@ Sarreth.Util.addLevelToActorAndCheckForEvol = function(actorId, levelToAdd)
 		Sarreth.Util.checkActorLevel($gameActors.actor(actorId));
 		levelToAdd--;
 	}
+}
+
+Sarreth.Util.setHealthForFusionActor = function(actorId, firstId, secondId)
+{
+	var firstHealthRatio = $gameActors.actor(firstId).hp / $gameActors.actor(firstId).mhp;
+	var secondHealthRatio = $gameActors.actor(secondId).hp / $gameActors.actor(secondId).mhp;
+	
+	var averageHealthRatio = (firstHealthRatio + secondHealthRatio)/2;
+	
+	$gameActors.actor(actorId).setHp(Math.round(averageHealthRatio * $gameActors.actor(actorId).mhp));
+}
+
+Sarreth.Util.setHealthToFusedActor = function(actorId, firstId, secondId)
+{
+	var healthRatio = $gameActors.actor(actorId).hp / $gameActors.actor(actorId).mhp;
+	
+	$gameActors.actor(firstId).setHp(Math.round(healthRatio * $gameActors.actor(firstId).mhp));
+	$gameActors.actor(secondId).setHp(Math.round(healthRatio * $gameActors.actor(secondId).mhp));
 }
 
 Sarreth.Util.checkGroupActorLevel = function() 
