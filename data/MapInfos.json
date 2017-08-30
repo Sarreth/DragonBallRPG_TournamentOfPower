@@ -1,5 +1,6 @@
 [
 null,
+<<<<<<< HEAD
 {"id":1,"expanded":false,"name":"MAP_TEST","order":1,"parentId":0,"scrollX":4336,"scrollY":2440},
 {"id":2,"expanded":false,"name":"Carte du Monde","order":2,"parentId":0,"scrollX":7160,"scrollY":5296},
 {"id":3,"expanded":false,"name":"MAP003","order":3,"parentId":0,"scrollX":5126.4,"scrollY":5472},
@@ -8,4 +9,14 @@ null,
 {"id":6,"expanded":false,"name":"Ile d'entraînement - Sud-Ouest","order":6,"parentId":0,"scrollX":1068,"scrollY":594},
 {"id":7,"expanded":false,"name":"Ile d'entraînement - Sud-Est","order":7,"parentId":0,"scrollX":1812,"scrollY":846},
 {"id":8,"expanded":false,"name":"Ile d'entraînement - Nord-Ouest","order":8,"parentId":0,"scrollX":2064,"scrollY":816}
+=======
+{"id":1,"expanded":false,"name":"MAP_TEST","order":1,"parentId":0,"scrollX":819,"scrollY":448.5},
+{"id":2,"expanded":false,"name":"MAP002","order":2,"parentId":0,"scrollX":4336,"scrollY":2440},
+{"id":3,"expanded":false,"name":"MAP003","order":3,"parentId":0,"scrollX":4272,"scrollY":7509},
+{"id":4,"expanded":false,"name":"MAP004","order":4,"parentId":0,"scrollX":1626,"scrollY":915},
+{"id":5,"expanded":false,"name":"MAP005","order":5,"parentId":0,"scrollX":2534,"scrollY":991.5},
+{"id":6,"expanded":false,"name":"MAP006","order":6,"parentId":0,"scrollX":4336,"scrollY":2440},
+{"id":7,"expanded":false,"name":"MAP007","order":7,"parentId":0,"scrollX":1626,"scrollY":915},
+{"id":8,"expanded":false,"name":"MAP008","order":8,"parentId":0,"scrollX":2064,"scrollY":816}
+>>>>>>> 2e02c6dc401a66a6e365ec5493936d48f0906968
 ]
