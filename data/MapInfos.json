@@ -8,8 +8,8 @@ null,
 {"id":6,"expanded":false,"name":"Ile d'entraînement - Sud-Ouest","order":6,"parentId":0,"scrollX":1068,"scrollY":594},
 {"id":7,"expanded":false,"name":"Ile d'entraînement - Sud-Est","order":7,"parentId":0,"scrollX":1812,"scrollY":846},
 {"id":8,"expanded":false,"name":"Ile d'entraînement - Nord-Ouest","order":8,"parentId":0,"scrollX":1714.909090909091,"scrollY":792},
-{"id":9,"expanded":true,"name":"Royaume de la KT","order":9,"parentId":0,"scrollX":1234.909090909091,"scrollY":648},
-{"id":10,"expanded":false,"name":"Palais de la KT - 1er étage","order":10,"parentId":9,"scrollX":1165.0909090909092,"scrollY":1254.5454545454545},
+{"id":9,"expanded":true,"name":"Royaume de la KT","order":9,"parentId":0,"scrollX":1200,"scrollY":648},
+{"id":10,"expanded":false,"name":"Palais de la KT - 1er étage","order":10,"parentId":9,"scrollX":1165.0909090909092,"scrollY":665.4545454545455},
 {"id":11,"expanded":false,"name":"Palais de la KT - 2ème étage","order":11,"parentId":9,"scrollX":1165.0909090909092,"scrollY":774.5454545454546},
 {"id":12,"expanded":false,"name":"Palais de la KT - 3ème étage","order":12,"parentId":9,"scrollX":1165.0909090909092,"scrollY":752.7272727272727}
 ]
