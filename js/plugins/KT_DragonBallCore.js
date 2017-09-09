@@ -1,12 +1,33 @@
 /*:
 *
-* @plugindesc Dragon Ball Utils plugin version 3.1
+* @plugindesc Dragon Ball Utils plugin version 3.2
 * Assembly with some utilities for the Dragon Ball Tournament Of Power game.
 * See help for indications about Plugin Command.
+*
+* @param ---Fusion---
+* @default
 *
 * @param Fusion Duration
 * @desc Number of turns before fusion expire
 * @default 6
+*
+* @param ---Gameover---
+* @default
+* @param Respawn On GameOver
+* @desc Set the possibility of respawning instead of going to GameOver screen when your team is KO
+* @default false
+*
+* @param Respawn on mapId
+* @desc Set the id of the map where you want to respawn on gameover. -1 if you want to respawn on CurrentMap.
+* @default -1
+*
+* @param Respawn X
+* @desc Set the x position of the respawn. -1 if you want to respawn on current x.
+* @default -1
+*
+* @param Respawn Y
+* @desc Set the y position of the respawn. -1 if you want to respawn on current y.
+* @default -1
 *
 *
 * @author Sarreth
@@ -53,6 +74,10 @@ Sarreth.Parameters = PluginManager.parameters('KT_DragonBallCore');
 Sarreth.Param = Sarreth.Param || {};
 
 Sarreth.Param.FusionDuration = Number(Sarreth.Parameters['Fusion Duration']);
+Sarreth.Param.MapIdOnGameOver = Number(Sarreth.Parameters['Respawn on mapId']);
+Sarreth.Param.RespawnX = Number(Sarreth.Parameters['Respawn X']);
+Sarreth.Param.RespawnY = Number(Sarreth.Parameters['Respawn Y']);
+Sarreth.Param.RespawnOnGameOver = Boolean(Sarreth.Parameters['Respawn On GameOver']);
 
 var fusionResultIds  = [];
 var fusionCallerIds  = [];
@@ -335,6 +360,31 @@ Sarreth.Util.checkActorLevel = function(actor)
 	}
 };
 
+Sarreth.Util.setRespawn = function()
+{
+	var id = $gameMap.mapId();
+	var x = $gamePlayer.x;
+	var y = $gamePlayer.y;
+	
+	if(Sarreth.Param.MapIdOnGameOver >= 0)
+	{
+		id = Sarreth.Param.MapIdOnGameOver;
+	}		
+	if(Sarreth.Param.RespawnX >= 0)
+	{
+		x = Sarreth.Param.RespawnX;
+	}		
+	if(Sarreth.Param.RespawnY >= 0)
+	{
+		y = Sarreth.Param.RespawnY;
+	}
+	
+	$gameParty.reviveBattleMembers();
+	SceneManager.pop();
+	$gamePlayer.reserveTransfer(id, x, y);
+	$gamePlayer.requestMapReload();
+}
+
 //=============================================================================
 // Prototype
 //=============================================================================
@@ -343,6 +393,32 @@ Sarreth.Util.checkActorLevel = function(actor)
 ////// BattleManager
 //////=========================================================================
 
+Sarreth.Util.BattleManager_updateBattleEnd = BattleManager.updateBattleEnd;
+BattleManager.updateBattleEnd = function()
+{
+	if (Sarreth.Param.RespawnOnGameOver && $gameParty.isAllDead()) 
+	{
+		Sarreth.Util.setRespawn();
+	}
+	else
+	{
+		Sarreth.Util.BattleManager_updateBattleEnd.call(this);
+	}
+}
+
+Sarreth.Util.BattleManager_processEscape = BattleManager.processEscape;
+BattleManager.processEscape = function () 
+{
+	Sarreth.Util.onBattleEnd();
+	Sarreth.Util.BattleManager_processEscape.call(this);
+};
+
+Sarreth.Util.BattleManager_processAbort = BattleManager.processAbort;
+BattleManager.processAbort = function () 
+{
+	Sarreth.Util.onBattleEnd();
+	Sarreth.Util.BattleManager_processAbort.call(this);
+};
 
 Sarreth.Util.BattleManager_processDefeat = BattleManager.processDefeat;
 BattleManager.processDefeat = function () 
@@ -390,52 +466,18 @@ Sarreth.Util.BattleManager_updateTurnEnd = BattleManager.updateTurnEnd;
 	toRemove = undefined; 
 };
 
-
 //////=========================================================================
-////// GameOverScene
+////// Scene
 //////=========================================================================
 
-Scene_Gameover.prototype.update = function() {
-    if (this.isActive() && !this.isBusy() && this.isTriggered()) {
-        this.loadgame();
-    }
-    if (this.isActive() && !this.isBusy() && this.isBackTriggered()) {
-        this.gotoTitle();
-    }
-    Scene_Base.prototype.update.call(this);
+Sarreth.Util.SceneBase_checkGameover = Scene_Base.prototype.checkGameover;
+Scene_Base.prototype.checkGameover = function() 
+{
+    if ($gameParty.isAllDead() && Sarreth.Param.RespawnOnGameOver) 
+	{
+        Sarreth.Util.setRespawn();
+    }else
+	{
+		Sarreth.Util.SceneBase_checkGameover.call(this);
+	}
 };
-
-
-Scene_Gameover.prototype.isTriggered = function() {
-    return Input.isTriggered('ok') || TouchInput.isTriggered();
-};
-Scene_Gameover.prototype.isBackTriggered = function() {
-    return Input.isRepeated('cancel') || TouchInput.isCancelled();
-};
-
-
-Scene_Gameover.prototype.loadgame = function() {
-    this.fadeOutAll();
-    if(DataManager.isAnySavefileExists()){
-        DataManager.loadGame(DataManager.latestSavefileId());
-        this.reloadMapIfUpdated();
-        $gameSystem.onAfterLoad();
-        SceneManager.goto(Scene_Map);
-    }
-    else{
-        SceneManager.goto(Scene_Title);
-    }
-};
-
-
-Scene_Gameover.prototype.gotoTitle = function() {
-    this.fadeOutAll();
-    SceneManager.goto(Scene_Title);
-};
-
-
-Scene_Gameover.prototype.reloadMapIfUpdated = function() {
-    $gamePlayer.reserveTransfer($gameMap.mapId(), $gamePlayer.x, $gamePlayer.y);
-    $gamePlayer.requestMapReload();
-};
-
