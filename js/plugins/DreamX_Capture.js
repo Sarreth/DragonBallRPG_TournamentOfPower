@@ -47,6 +47,14 @@
  * @param Level Up Instead of Duplicates
  * @desc Whether to level up a captured enemy when limit is reached. Default: false
  * @default false
+ *  
+ * @param Stat Up Instead of Duplicates
+ * @desc Whether to improve stat to a captured enemy when limit is reached. Default: false
+ * @default false
+ *
+ * @param Stat Up percentage
+ * @desc The percentage stats will be improved. Default: 0.3
+ * @default 0.3
  * 
  * @param Use Standard Level Up Message
  * @desc Whether to use the standard level up message instead of a custom one. Default: true
@@ -153,6 +161,8 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
             || '50 - ((enemy.hp/enemy.mhp) * 50)');
     var parameterCaptureAnim = parseInt(parameters['Capture Success Anim']
             || 0);
+    var parameterStatUpPercent = parseFloat(parameters['Stat Up percentage']
+            || 0.3);
     var parameterCaptureFailAnim = parseInt(parameters['Capture Fail Anim']
             || 0);
     var parameterShowText = eval(parameters['Message As Show Text']
@@ -160,6 +170,8 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
     var paramEXPFromCapture = eval(parameters['EXP From Capture']
             || false);
     var paramLevelUpNoDuplicate = eval(parameters['Level Up Instead of Duplicates']
+            || false);
+    var paramStatUpNoDuplicate = eval(parameters['Stat Up Instead of Duplicates']
             || false);
     var paramDefaultLevelUpMsg = eval(parameters['Use Standard Level Up Message']
             || true);
@@ -306,7 +318,13 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
             DreamX.CaptureEnemy.displayMessage(parameterCaptureSuccessMsg.format(enemyName, troopName, actorName));
         }
         if (this._wasLevelUpCaptured) {
-            DreamX.CaptureEnemy.levelUpDuplicateActors(actorId);
+			if(paramStatUpNoDuplicate) {
+				DreamX.CaptureEnemy.statUpDuplicateActors(actorId);
+			}else{
+				DreamX.CaptureEnemy.levelUpDuplicateActors(actorId);
+			}
+			
+            
             if (paramDefaultLevelUpMsg === false) {
                 DreamX.CaptureEnemy.displayMessage(paramLvlUpMsg.format(actorName, troopName, actorName));
             }
@@ -374,10 +392,38 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
         return gameActorsLength + enemiesCapturedThisBattle;
     };
 
-    DreamX.CaptureEnemy.levelUpDuplicateActors = function (actorId) {
+    DreamX.CaptureEnemy.statUpDuplicateActors = function (actorId) {
         for (var i = 0; i < $gameParty.allMembers().length; i++) {
             var actor = $gameParty.allMembers()[i];
             if (actor.actorId() === actorId || actor.baseActorId() === actorId) {
+				var newHpMax = actor.mhp*parameterStatUpPercent/2.0;
+				var newMpMax = actor.mmp*parameterStatUpPercent/2.0;
+				var newAtk = actor.atk*parameterStatUpPercent;
+				var newDef = actor.def*parameterStatUpPercent;
+				var newMAtk = actor.mat*parameterStatUpPercent;
+				var newMDef = actor.mdf*parameterStatUpPercent;
+				var newAgi = actor.agi*parameterStatUpPercent;
+				var newLuk = actor.luk*parameterStatUpPercent;
+				
+				actor.addParam(0, newHpMax);
+				actor.addParam(1, newMpMax);
+				actor.addParam(2, newAtk);
+				actor.addParam(3, newDef);
+				actor.addParam(4, newMAtk);
+				actor.addParam(5, newMDef);
+				actor.addParam(6, newAgi);
+				actor.addParam(7, newLuk);			
+				
+				actor.setHp(Math.round(newHpMax + actor.hp));
+				actor.setMp(Math.round(newMpMax + actor.mp));
+            }
+        }
+    };
+
+    DreamX.CaptureEnemy.levelUpDuplicateActors = function (actorId) {
+        for (var i = 0; i < $gameParty.allMembers().length; i++) {
+            var actor = $gameParty.allMembers()[i];
+            if (actor.actorId() === actorId || actor.baseActorId() === actorId) {				
                 var newExp = actor.currentExp() + actor.nextRequiredExp();
                 actor.changeExp(newExp, paramDefaultLevelUpMsg);
             }
@@ -388,7 +434,7 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
         var newActorLevel = 1;
 		lastClassId = parseInt(dataEnemyMeta.capture_class_id);
 		
-        if (parameterDuplicateLimit > 0 && numDuplicates >= parameterDuplicateLimit && paramLevelUpNoDuplicate) {
+        if (parameterDuplicateLimit > 0 && numDuplicates >= parameterDuplicateLimit && (paramLevelUpNoDuplicate || paramStatUpNoDuplicate)) {
             target._wasLevelUpCaptured = true;
         } else {
             if (target.level && target.level >= 1) {
@@ -436,7 +482,7 @@ DreamX.CaptureEnemy = DreamX.CaptureEnemy || {};
         // record duplicates (number of times enemy has been captured as a copy)
         var numDuplicates = DreamX.CaptureEnemy.numActorDuplicates(baseActorId);
         // if number of duplicates exceeds limit and won't cause a level up
-        if (parameterDuplicateLimit > 0 && numDuplicates >= parameterDuplicateLimit && !paramLevelUpNoDuplicate) {
+        if (parameterDuplicateLimit > 0 && numDuplicates >= parameterDuplicateLimit && !(paramLevelUpNoDuplicate || paramStatUpNoDuplicate)) {
             DreamX.CaptureEnemy.displayMessage(parameterDuplicateLimitMessage.format(targetName, troopName, actorName));
             return;
         }

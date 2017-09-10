@@ -380,6 +380,12 @@ Sarreth.Util.setRespawn = function()
 	}
 	
 	$gameParty.reviveBattleMembers();
+	
+	for (var i = 0; i < $gameParty.allMembers().length; i++) {
+		var actor = $gameParty.allMembers()[i];
+		actor.recoverAll();
+	};	
+	
 	SceneManager.pop();
 	$gamePlayer.reserveTransfer(id, x, y);
 	$gamePlayer.requestMapReload();
