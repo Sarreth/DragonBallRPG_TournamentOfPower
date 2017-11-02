@@ -1,6 +1,6 @@
 [
 null,
-{"id":1,"expanded":false,"name":"MAP_TEST","order":1,"parentId":0,"scrollX":2457,"scrollY":1383},
+{"id":1,"expanded":false,"name":"MAP_TEST","order":1,"parentId":0,"scrollX":1400.5714285714284,"scrollY":790.2857142857142},
 {"id":2,"expanded":false,"name":"Carte du Monde - Présent","order":2,"parentId":0,"scrollX":6476,"scrollY":7432},
 {"id":3,"expanded":true,"name":"Plaine de Yamcha","order":12,"parentId":0,"scrollX":7843.2,"scrollY":4425.599999999999},
 {"id":4,"expanded":false,"name":"Ile de Tortue Géniale","order":11,"parentId":0,"scrollX":3530.1818181818185,"scrollY":2535.2727272727275},
