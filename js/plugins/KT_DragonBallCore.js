@@ -116,9 +116,9 @@ Sarreth.Util.onBattleEnd = function()
 	for(var fusionIndex = 0; fusionIndex < fusionResultIds.length; fusionIndex++)
 	{
 		Sarreth.Util.setHealthToFusedActor(fusionResultIds[fusionIndex], fusionCallerIds[fusionIndex], fusionReceiverIds[fusionIndex])
+		$gameParty.removeActor(fusionResultIds[fusionIndex]);
 		$gameParty.addActor(fusionCallerIds[fusionIndex]);
 		$gameParty.addActor(fusionReceiverIds[fusionIndex]);
-		$gameParty.removeActor(fusionResultIds[fusionIndex]);
 		
 		toRemove.push(fusionIndex);
 	}
@@ -184,6 +184,9 @@ Sarreth.Util.checkTempFusion = function()
 		return;
 	}
 	
+	$gameParty.removeActor(receiverId);
+	$gameParty.removeActor(callerId);
+	
 	$gameParty.addActor(resultActorId);
 	
 	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
@@ -193,9 +196,6 @@ Sarreth.Util.checkTempFusion = function()
 	
 	Sarreth.Util.addLevelToActorAndCheckForEvol(resultActorId, targetLevel);
 	Sarreth.Util.setHealthForFusionActor(resultActorId, callerId, receiverId);
-	
-	$gameParty.removeActor(receiverId);
-	$gameParty.removeActor(callerId);
 	
 	fusionReceiverIds.push(receiverId);
 	fusionCallerIds.push(callerId);
