@@ -8,24 +8,41 @@
 * @default
 *
 * @param Fusion Duration
+* @parent ---Fusion---
+* @type number
+* @min 1
 * @desc Number of turns before fusion expire
 * @default 6
 *
 * @param ---Gameover---
 * @default
+*
 * @param Respawn On GameOver
+* @parent ---Gameover---
+* @type boolean
+* @on Respawn
+* @off GameOver
 * @desc Set the possibility of respawning instead of going to GameOver screen when your team is KO
 * @default false
 *
 * @param Respawn on mapId
+* @parent ---Gameover---
+* @type number
+* @min -1
 * @desc Set the id of the map where you want to respawn on gameover. -1 if you want to respawn on CurrentMap.
 * @default -1
 *
 * @param Respawn X
+* @parent ---Gameover---
+* @type number
+* @min -1
 * @desc Set the x position of the respawn. -1 if you want to respawn on current x.
 * @default -1
 *
 * @param Respawn Y
+* @parent ---Gameover---
+* @type number
+* @min -1
 * @desc Set the y position of the respawn. -1 if you want to respawn on current y.
 * @default -1
 *
