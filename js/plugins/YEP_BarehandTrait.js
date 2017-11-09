@@ -138,11 +138,19 @@ Game_Actor.prototype.barehanded =function() {
        
         // List of currently equipped non-weapon items
         items=this.equips();
+		var noWeaponEquiped = true;
         for (mod=0; mod<items.length; mod++)
         {
                 current=items[mod];
-                if (current === null || DataManager.isWeapon(current))
-                        continue;
+                if (current === null)
+				{					
+					continue;
+				}				
+				if (DataManager.isWeapon(current))
+				{
+					noWeaponEquiped = false;
+					continue;
+				}
                 meta={};
                 if (DataManager.isArmor(current))
                                 meta=$dataArmors[current.id].meta;
@@ -165,7 +173,7 @@ Game_Actor.prototype.barehanded =function() {
                 if ($dataStates[current.id].meta.barehanded)
                         return true;
         }
-        return false;
+        return noWeaponEquiped;
 }
  
 var WS_Game_Actor_paramPlus=Game_Actor.prototype.paramPlus;
