@@ -1,6 +1,6 @@
 /*:
 *
-* @plugindesc Dragon Ball Utils plugin version 3.2
+* @plugindesc Dragon Ball Utils plugin version 3.3
 * Assembly with some utilities for the Dragon Ball Tournament Of Power game.
 * See help for indications about Plugin Command.
 *
@@ -125,31 +125,6 @@ var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 //=============================================================================
 
 Sarreth.Util = Sarreth.Util || {};
-
-Sarreth.Util.onBattleEnd = function()
-{
-	var toRemove = [];
-	
-	for(var fusionIndex = 0; fusionIndex < fusionResultIds.length; fusionIndex++)
-	{
-		Sarreth.Util.setHealthToFusedActor(fusionResultIds[fusionIndex], fusionCallerIds[fusionIndex], fusionReceiverIds[fusionIndex])
-		$gameParty.removeActor(fusionResultIds[fusionIndex]);
-		$gameParty.addActor(fusionCallerIds[fusionIndex]);
-		$gameParty.addActor(fusionReceiverIds[fusionIndex]);
-		
-		toRemove.push(fusionIndex);
-	}
-	
-	for(var i=0; i < toRemove.length; i++)
-	{
-		fusionCountdown.splice(toRemove[i],1);
-		fusionCallerIds.splice(toRemove[i],1);
-		fusionReceiverIds.splice(toRemove[i],1);
-		fusionResultIds.splice(toRemove[i],1);
-	}
-	
-	toRemove = undefined; 
-}
 
 Sarreth.Util.checkTempFusion = function() 
 {	
@@ -377,6 +352,37 @@ Sarreth.Util.checkActorLevel = function(actor)
 	}
 };
 
+Sarreth.Util.resetFusionsIfNeeded = function(battleEnded)
+{
+	var toRemove = [];
+	
+	for(var fusionIndex = 0; fusionIndex < fusionResultIds.length; fusionIndex++)
+	{
+		if(battleEnded || fusionCountdown[fusionIndex] == 0)
+		{
+			Sarreth.Util.setHealthToFusedActor(fusionResultIds[fusionIndex], fusionCallerIds[fusionIndex], fusionReceiverIds[fusionIndex])
+			$gameParty.removeActor(fusionResultIds[fusionIndex]);
+			$gameParty.addActor(fusionCallerIds[fusionIndex]);
+			$gameParty.addActor(fusionReceiverIds[fusionIndex]);
+			
+			toRemove.push(fusionIndex);
+		}else
+		{
+			fusionCountdown[fusionIndex]--;
+		}
+	}
+	
+	for(var i=0; i < toRemove.length; i++)
+	{
+		fusionCountdown.splice(toRemove[i],1);
+		fusionCallerIds.splice(toRemove[i],1);
+		fusionReceiverIds.splice(toRemove[i],1);
+		fusionResultIds.splice(toRemove[i],1);
+	}
+	
+	toRemove = undefined; 
+};
+
 Sarreth.Util.setRespawn = function()
 {
 	var id = $gameMap.mapId();
@@ -432,28 +438,28 @@ BattleManager.updateBattleEnd = function()
 Sarreth.Util.BattleManager_processEscape = BattleManager.processEscape;
 BattleManager.processEscape = function () 
 {
-	Sarreth.Util.onBattleEnd();
+	Sarreth.Util.resetFusionsIfNeeded(true);
 	Sarreth.Util.BattleManager_processEscape.call(this);
 };
 
 Sarreth.Util.BattleManager_processAbort = BattleManager.processAbort;
 BattleManager.processAbort = function () 
 {
-	Sarreth.Util.onBattleEnd();
+	Sarreth.Util.resetFusionsIfNeeded(true);
 	Sarreth.Util.BattleManager_processAbort.call(this);
 };
 
 Sarreth.Util.BattleManager_processDefeat = BattleManager.processDefeat;
 BattleManager.processDefeat = function () 
 {
-	Sarreth.Util.onBattleEnd();
+	Sarreth.Util.resetFusionsIfNeeded(true);
 	Sarreth.Util.BattleManager_processDefeat.call(this);
 };
 
 Sarreth.Util.BattleManager_processVictory = BattleManager.processVictory;
 BattleManager.processVictory = function () 
 {	
-	Sarreth.Util.onBattleEnd();
+	Sarreth.Util.resetFusionsIfNeeded(true);
 	Sarreth.Util.BattleManager_processVictory.call(this);
 };
 
@@ -461,32 +467,7 @@ Sarreth.Util.BattleManager_updateTurnEnd = BattleManager.updateTurnEnd;
     BattleManager.updateTurnEnd = function () 
 {
 	Sarreth.Util.BattleManager_updateTurnEnd.call(this);
-	var toRemove = [];
-	
-	for(var fusionIndex = 0; fusionIndex < fusionResultIds.length; fusionIndex++)
-	{
-		if(fusionCountdown[fusionIndex] == 0)
-		{
-			$gameParty.addActor(fusionCallerIds[fusionIndex]);
-			$gameParty.addActor(fusionReceiverIds[fusionIndex]);
-			$gameParty.removeActor(fusionResultIds[fusionIndex]);
-			
-			toRemove.push(fusionIndex);
-		}else
-		{
-			fusionCountdown[fusionIndex]--;
-		}
-	}
-	
-	for(var i=0; i < toRemove.length; i++)
-	{
-		fusionCountdown.splice(toRemove[i],1);
-		fusionCallerIds.splice(toRemove[i],1);
-		fusionReceiverIds.splice(toRemove[i],1);
-		fusionResultIds.splice(toRemove[i],1);
-	}
-	
-	toRemove = undefined; 
+	Sarreth.Util.resetFusionsIfNeeded(false);		
 };
 
 //////=========================================================================
