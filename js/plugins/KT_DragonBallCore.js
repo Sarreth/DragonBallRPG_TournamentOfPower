@@ -1,8 +1,16 @@
 /*:
 *
-* @plugindesc Dragon Ball Utils plugin version 3.3
+* @plugindesc Dragon Ball Utils plugin version 4.0
 * Assembly with some utilities for the Dragon Ball Tournament Of Power game.
 * See help for indications about Plugin Command.
+*
+* @param ---Transformation---
+* @default
+*
+* @param Transformation Message
+* @parent ---Transformation---
+* @desc Set the text to display when you transform. Use %1 to display actor name and %2 to display class name.
+* @default %1 s'est transformé en %2
 *
 * @param ---Fusion---
 * @default
@@ -13,6 +21,20 @@
 * @min 1
 * @desc Number of turns before fusion expire
 * @default 6
+*
+* @param Auto Calculate Fused Stats
+* @parent ---Fusion---
+* @type boolean
+* @on Calculate with formula
+* @off Manually handle with class
+* @desc Set the possibility handle fused actor stats with formula
+* @default false
+*
+* @param Fused Stats Formula
+* @parent ---Fusion---
+* @desc Set the formula used to generate stats for fused actor. Use %1 for first actor and %2 for second actor. Formula will apply on all stats.
+* @default (%1 + %2) * 1.1
+*
 *
 * @param ---Gameover---
 * @default
@@ -91,10 +113,15 @@ Sarreth.Parameters = PluginManager.parameters('KT_DragonBallCore');
 Sarreth.Param = Sarreth.Param || {};
 
 Sarreth.Param.FusionDuration = Number(Sarreth.Parameters['Fusion Duration']);
+Sarreth.Param.AutoCalculateFusedStats = Boolean(Sarreth.Parameters['Auto Calculate Fused Stats']);
+Sarreth.Param.FusedStatsFormula = Sarreth.Parameters['Fused Stats Formula'];
+
 Sarreth.Param.MapIdOnGameOver = Number(Sarreth.Parameters['Respawn on mapId']);
 Sarreth.Param.RespawnX = Number(Sarreth.Parameters['Respawn X']);
 Sarreth.Param.RespawnY = Number(Sarreth.Parameters['Respawn Y']);
 Sarreth.Param.RespawnOnGameOver = Boolean(Sarreth.Parameters['Respawn On GameOver']);
+
+Sarreth.Param.TransformationMessage = Sarreth.Parameters['Transformation Message'];
 
 var fusionResultIds  = [];
 var fusionCallerIds  = [];
@@ -172,7 +199,7 @@ Sarreth.Util.checkTempFusion = function()
 	
 	if(fusionCandidate != baseReceiverId || fusionCandidate <=0 || resultActorId <=0)
 	{	
-		//Display screen
+		//TODO Display screen : Impossible de fusionner avec lui
 		return;
 	}
 	
@@ -180,6 +207,11 @@ Sarreth.Util.checkTempFusion = function()
 	$gameParty.removeActor(callerId);
 	
 	$gameParty.addActor(resultActorId);
+	
+	if(Sarreth.Param.AutoCalculateFusedStats)
+	{
+		Sarreth.Util.calculateFusedStats(callerId, receiverId, resultActorId);
+	}
 	
 	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
 	var receiverLevel = Sarreth.Util.getActorTotalLevel(receiverId);
@@ -241,7 +273,7 @@ Sarreth.Util.checkPotaraFusion = function()
 	
 	if(potaraCandidate != baseReceiverId || potaraCandidate <=0 || resultActorId <=0)
 	{	
-		//Display screen
+		//TODO : Display screen
 		return;
 	}
 	
@@ -249,6 +281,11 @@ Sarreth.Util.checkPotaraFusion = function()
 	
 	var callerLevel = Sarreth.Util.getActorTotalLevel(callerId);	
 	var receiverLevel = Sarreth.Util.getActorTotalLevel(receiverId);
+	
+	if(Sarreth.Param.AutoCalculateFusedStats)
+	{
+		Sarreth.Util.calculateFusedStats(callerId, receiverId, resultActorId);
+	}
 	
 	var targetLevel = -1;
 	if(callerLevel <= receiverLevel)
@@ -280,6 +317,43 @@ Sarreth.Util.getActorTotalLevel = function(actorId)
 	
 	return callerTotalLevel;
 }
+
+Sarreth.Util.calculateFusedStats = function(callerId, receiverId, fusedId)
+{
+	var callerActor = $gameActors.actor(callerId);
+	var receiverActor = $gameActors.actor(receiverId);
+	var fusedActor = $gameActors.actor(fusedId);
+	
+	var mhpFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.mhp", "receiverActor.mhp");
+	var mmpFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.mmp", "receiverActor.mmp");
+
+	var agiFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.agi", "receiverActor.agi");
+	var atkFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.atk", "receiverActor.atk");
+	var defFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.def", "receiverActor.def");
+	var lukFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.luk", "receiverActor.luk");
+	var matFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.mat", "receiverActor.mat");
+	var mdfFormula = Sarreth.Param.FusedStatsFormula.format("callerActor.mdf", "receiverActor.mdf");
+	
+	var resultHp=eval(mhpFormula);
+	var resultMp=eval(mmpFormula);
+	
+	var resultAgi=eval(agiFormula);
+	var resultAtk=eval(atkFormula);
+	var resultDef=eval(defFormula);
+	var resultLuk=eval(lukFormula);
+	var resultMat=eval(matFormula);
+	var resultMdf=eval(mdfFormula);
+	
+	fusedActor.addParam(0, Math.round(resultHp - fusedActor.mhp));
+	fusedActor.addParam(1, Math.round(resultMp - fusedActor.mmp));
+	
+	fusedActor.addParam(2, Math.round(resultAtk - fusedActor.atk));
+	fusedActor.addParam(3, Math.round(resultDef - fusedActor.def));
+	fusedActor.addParam(4, Math.round(resultMat - fusedActor.mat));
+	fusedActor.addParam(5, Math.round(resultMdf - fusedActor.mdf));
+	fusedActor.addParam(6, Math.round(resultAgi - fusedActor.agi));
+	fusedActor.addParam(7, Math.round(resultLuk - fusedActor.luk));
+};
 
 Sarreth.Util.addLevelToActorAndCheckForEvol = function(actorId, levelToAdd)
 {
@@ -414,6 +488,16 @@ Sarreth.Util.setRespawn = function()
 	$gamePlayer.requestMapReload();
 }
 
+Sarreth.Util.displayTransform = function(actor, skills) {
+    var text = Sarreth.Param.TransformationMessage.format(actor.name(), actor.currentClass().name);
+    $gameMessage.newPage();
+    $gameMessage.add(text);
+	
+    skills.forEach(function(skill) {
+        $gameMessage.add(TextManager.obtainSkill.format(skill.name));
+    });
+};
+
 //=============================================================================
 // Prototype
 //=============================================================================
@@ -466,8 +550,35 @@ BattleManager.processVictory = function ()
 Sarreth.Util.BattleManager_updateTurnEnd = BattleManager.updateTurnEnd;
     BattleManager.updateTurnEnd = function () 
 {
-	Sarreth.Util.BattleManager_updateTurnEnd.call(this);
 	Sarreth.Util.resetFusionsIfNeeded(false);		
+	Sarreth.Util.BattleManager_updateTurnEnd.call(this);
+};
+
+//////=========================================================================
+////// GameActor
+//////=========================================================================
+
+Sarreth.Util.GameActor_changeExp = Game_Actor.prototype.changeExp;
+
+Game_Actor.prototype.changeExp = function(exp, show)
+{
+	var curClass = this.currentClass();
+	var lastSkills = this.skills();
+	
+	Sarreth.Util.GameActor_changeExp.call(this, exp, show);
+	var newCurClass = this.currentClass();
+	if(curClass != newCurClass)
+	{
+		Sarreth.Util.displayTransform(this, this.findNewSkills(lastSkills));
+	}
+};
+
+Sarreth.Util.GameActor_levelUp = Game_Actor.prototype.levelUp;
+
+Game_Actor.prototype.levelUp = function()
+{
+	Sarreth.Util.GameActor_levelUp.call(this);
+	Sarreth.Util.checkActorLevel(this);	
 };
 
 //////=========================================================================
