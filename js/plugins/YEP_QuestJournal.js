@@ -151,8 +151,8 @@ Yanfly.Quest.version = 1.00;
  * here to add icons and/or colors to the quest types. When you are typing out
  * the quest type names for the individual quest types to fall under, you can
  * omit the \i[x] and \c[x] codes, but everything else must be in tact.
- * Default: ["\\c[6]Main Quests","\\c[4]Side Quests","\\c[3]Character Quests",
- *           "\\c[5]Tutorial Quests"]
+ * Default: ["\\c[6]Principales","\\c[4]Secondaires","\\c[3]Spéciales",
+ *           "\\c[5]Autres"]
  *
  * List Open Symbol
  * - The symbol used to display to show a quest type is opened (showing all of
@@ -1903,7 +1903,7 @@ Yanfly.Quest.version = 1.00;
  * @type string[]
  * @desc Order list for the quest list types.
  * Name these however you want. Text codes are allowed.
- * @default ["\\c[6]Main Quests","\\c[4]Side Quests","\\c[3]Character Quests","\\c[5]Tutorial Quests"]
+ * @default ["\\c[6]Principales","\\c[4]Secondaires","\\c[3]Spéciales","\\c[5]Autres"]
  *
  * @param List Open Symbol
  * @parent ---Types---
@@ -2599,12 +2599,12 @@ Yanfly.Quest.version = 1.00;
  * @param Type
  * @parent Title
  * @type combo
- * @option Main Quests
- * @option Side Quests
- * @option Character Quests
- * @option Tutorial Quests
+ * @option Principales
+ * @option Secondaires
+ * @option Spéciales
+ * @option Autres
  * @desc What type of quest is this?
- * @default Main Quests
+ * @default Principales
  *
  * @param Difficulty
  * @parent Title
