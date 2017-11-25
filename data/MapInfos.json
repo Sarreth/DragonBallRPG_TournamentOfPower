@@ -10,8 +10,8 @@ null,
 {"id":8,"expanded":false,"name":"Ile d'entraînement - Nord-Ouest","order":11,"parentId":0,"scrollX":1486,"scrollY":776},
 {"id":9,"expanded":true,"name":"Royaume de la KT","order":3,"parentId":0,"scrollX":1390.2857142857142,"scrollY":1609.7142857142856},
 {"id":10,"expanded":false,"name":"Palais de la KT - 1er étage","order":4,"parentId":9,"scrollX":1390.2857142857142,"scrollY":1129.7142857142856},
-{"id":11,"expanded":false,"name":"Palais de la KT - 2ème étage","order":5,"parentId":9,"scrollX":1404,"scrollY":790.2857142857142},
-{"id":12,"expanded":false,"name":"Palais de la KT - 3ème étage","order":6,"parentId":9,"scrollX":1404,"scrollY":790.2857142857142},
+{"id":11,"expanded":false,"name":"Palais de la KT - 2ème étage","order":5,"parentId":9,"scrollX":1393.7142857142856,"scrollY":790.2857142857142},
+{"id":12,"expanded":false,"name":"Palais de la KT - 3ème étage","order":6,"parentId":9,"scrollX":4336,"scrollY":2440},
 {"id":13,"expanded":false,"name":"Résidence de Yamcha","order":18,"parentId":3,"scrollX":5203.2,"scrollY":2928},
 {"id":14,"expanded":false,"name":"Basse Montagne Est","order":19,"parentId":0,"scrollX":1830.8571428571427,"scrollY":1220.5714285714284},
 {"id":15,"expanded":false,"name":"Haute Montagne","order":20,"parentId":0,"scrollX":1830.8571428571427,"scrollY":1354.2857142857142},
@@ -38,5 +38,6 @@ null,
 {"id":36,"expanded":false,"name":"Jardin arrière","order":34,"parentId":31,"scrollX":1084,"scrollY":610},
 {"id":37,"expanded":false,"name":"Village au pied de la tour Karine","order":35,"parentId":0,"scrollX":1393.7142857142856,"scrollY":790.2857142857142},
 {"id":38,"expanded":false,"name":"Tour Karine - en cours","order":36,"parentId":37,"scrollX":801,"scrollY":502.5},
-{"id":39,"expanded":false,"name":"Intro","order":39,"parentId":0,"scrollX":1404,"scrollY":790.2857142857142}
+{"id":39,"expanded":false,"name":"Intro","order":39,"parentId":0,"scrollX":1404,"scrollY":790.2857142857142},
+{"id":40,"expanded":false,"name":"Intérieur du corps de Buu","order":40,"parentId":0,"scrollX":5203.2,"scrollY":2928}
 ]
